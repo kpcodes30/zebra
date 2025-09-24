@@ -94,10 +94,13 @@ function updatePasswordAnalysis(password) {
   const crackTimeText = document.getElementById("crack-time-text");
 
   if (strengthIndicator && strengthText && crackTimeText) {
-    strengthIndicator.style.width = `${(analysis.score / 4) * 100}%`;
-    strengthIndicator.className = `h-2.5 rounded-full ${analysis.color}`;
+    const progressPercentage = (analysis.score / 4) * 100;
+    strengthIndicator.style.width = `${progressPercentage}%`;
+    strengthIndicator.className = `h-2.5 rounded-full transition-all duration-500 ${analysis.color}`;
     strengthText.textContent = analysis.strength;
-    crackTimeText.textContent = analysis.crackTime;
+    crackTimeText.textContent = analysis.crackTimes.slow || analysis.crackTimes.fast || "";
+    const ct = analysis.crackTimes;
+    crackTimeText.title = `Slow offline (1e4/s): ${ct.slow}\nFast offline (1e10/s): ${ct.fast}\nOnline (no throttle ~10/s): ${ct.onlineFast}\nOnline (throttled ~100/hr): ${ct.onlineThrottled}`;
   }
 
   const { charCount, entropy, charTypes } = getAnalysisElements();
@@ -107,86 +110,47 @@ function updatePasswordAnalysis(password) {
 }
 
 function calculatePasswordStrength(password) {
-  let score = 0;
-  let characterTypes = {
+  const result = zxcvbn(password);
+
+  const SCORE_MAP = [
+    { label: "Very Weak", color: "bg-red-700" },
+    { label: "Weak",      color: "bg-red-500" },
+    { label: "Fair",      color: "bg-yellow-500" },
+    { label: "Good",      color: "bg-green-500" },
+    { label: "Strong",    color: "bg-green-600" },
+  ];
+  const scoreMeta = SCORE_MAP[result.score] || SCORE_MAP[0];
+
+  const characterTypes = {
     lowercase: /[a-z]/.test(password),
     uppercase: /[A-Z]/.test(password),
     numbers: /[0-9]/.test(password),
     symbols: /[^a-zA-Z0-9]/.test(password),
-    count: 0,
+  };
+  const characterTypeCount = Object.values(characterTypes).filter(Boolean).length;
+
+  const ctDisplay = result.crack_times_display || {};
+  const crackTimes = {
+    fast: ctDisplay.offline_fast_hashing_1e10_per_second || "",
+    slow: ctDisplay.offline_slow_hashing_1e4_per_second || "",
+    onlineFast: ctDisplay.online_no_throttling_10_per_second || "",
+    onlineThrottled: ctDisplay.online_throttling_100_per_hour || "",
   };
 
-  characterTypes.count = Object.values(characterTypes).filter(
-    (v) => v === true
-  ).length;
-
-  if (password.length >= 8) score++;
-  if (password.length >= 12) score++;
-  if (characterTypes.count >= 2) score++;
-  if (characterTypes.count >= 4) score++;
-
-  let strength = "";
-  let color = "bg-red-600";
-  switch (score) {
-    case 0:
-    case 1:
-      strength = "Weak";
-      break;
-    case 2:
-      strength = "Moderate";
-      color = "bg-yellow-500";
-      break;
-    case 3:
-      strength = "Strong";
-      color = "bg-green-500";
-      break;
-    case 4:
-      strength = "Very Strong";
-      color = "bg-blue-500";
-      break;
-  }
-
-  let charsetSize = 0;
-  if (characterTypes.lowercase) charsetSize += 26;
-  if (characterTypes.uppercase) charsetSize += 26;
-  if (characterTypes.numbers) charsetSize += 10;
-  if (characterTypes.symbols) charsetSize += 32;
-
-  const entropyValue = password.length * (Math.log(charsetSize) / Math.log(2));
-  const guessesPerSecond = 1e9;
-  const crackTimeSeconds = Math.pow(2, entropyValue) / guessesPerSecond;
-  const crackTime = formatCrackTime(crackTimeSeconds);
+  const entropyBits = typeof result.guesses_log10 === "number"
+    ? result.guesses_log10 * Math.LOG2E * Math.log(10)
+    : 0;
 
   return {
-    score,
-    strength,
-    color,
-    crackTime,
+    score: result.score,
+    strength: scoreMeta.label,
+    color: scoreMeta.color,
+    crackTimes,
     length: password.length,
-    entropy: isNaN(entropyValue) ? 0 : entropyValue,
-    characterTypes,
+    entropy: entropyBits,
+    characterTypes: { ...characterTypes, count: characterTypeCount },
+    rawGuesses: result.guesses,
   };
-}
-
-function formatCrackTime(seconds) {
-  if (seconds < 1) return "Instantly";
-  const intervals = [
-    { label: "year", seconds: 31536000 },
-    { label: "month", seconds: 2592000 },
-    { label: "day", seconds: 86400 },
-    { label: "hour", seconds: 3600 },
-    { label: "minute", seconds: 60 },
-    { label: "second", seconds: 1 },
-  ];
-
-  for (let i = 0; i < intervals.length; i++) {
-    const interval = intervals[i];
-    const count = Math.floor(seconds / interval.seconds);
-    if (count >= 1) {
-      return `${count} ${interval.label}${count > 1 ? "s" : ""}`;
-    }
-  }
-  return "Instantly";
 }
 
 function resetAnalysis() {
