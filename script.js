@@ -46,11 +46,9 @@ function setupInfoPopovers() {
       const popoverId = btn.getAttribute("data-popover");
       const popover = document.getElementById(popoverId);
       if (popover) {
-        // Hide any open popover
         if (activePopover && activePopover !== popover) {
           activePopover.classList.add("hidden");
         }
-        // Position popover next to button
         const rect = btn.getBoundingClientRect();
         popover.style.top = rect.bottom + window.scrollY + "px";
         popover.style.left = rect.left + window.scrollX + "px";
