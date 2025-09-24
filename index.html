@@ -28,31 +28,6 @@
         );
       }
 
-      
-      .tooltip {
-        opacity: 0;
-        transform: translateY(5px);
-        transition: opacity 0.2s ease, transform 0.2s ease;
-        width: 200px;
-        pointer-events: none;
-      }
-
-      .tooltip:not(.hidden) {
-        opacity: 1;
-        transform: translateY(0);
-      }
-
-    
-      .tooltip::before {
-        content: "";
-        position: absolute;
-        top: -6px;
-        left: 15px;
-        border-width: 0 6px 6px 6px;
-        border-style: solid;
-        border-color: transparent transparent rgb(55, 65, 81) transparent;
-      }
-
       .pulse-dot {
         width: 8px;
         height: 8px;
@@ -492,39 +467,6 @@
       </div>
     </footer>
 
-    <!-- Tooltips for password info -->
-    <div
-      id="char-count-modal"
-      class="hidden absolute z-50 bg-gray-900 border border-gray-700 rounded-lg p-3 shadow-lg max-w-xs tooltip"
-    >
-      <h3 class="font-semibold text-white text-sm mb-1">Character Count</h3>
-      <p class="text-gray-300 text-xs">
-        The total number of characters in your password. Longer passwords are
-        generally more secure.
-      </p>
-    </div>
-
-    <div
-      id="entropy-modal"
-      class="hidden absolute z-50 bg-gray-900 border border-gray-700 rounded-lg p-3 shadow-lg max-w-xs tooltip"
-    >
-      <h3 class="font-semibold text-white text-sm mb-1">Entropy</h3>
-      <p class="text-gray-300 text-xs">
-        A measure of how unpredictable your password is. Higher entropy (more
-        bits) means your password is harder to crack.
-      </p>
-    </div>
-
-    <div
-      id="char-types-modal"
-      class="hidden absolute z-50 bg-gray-900 border border-gray-700 rounded-lg p-3 shadow-lg max-w-xs tooltip"
-    >
-      <h3 class="font-semibold text-white text-sm mb-1">Character Types</h3>
-      <p class="text-gray-300 text-xs">
-        The types of characters used in your password (lowercase, uppercase,
-        numbers, symbols). Using more types increases security.
-      </p>
-    </div>
     <script src="script.js"></script>
   </body>
 </html>
