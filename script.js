@@ -32,73 +32,53 @@ document.addEventListener("DOMContentLoaded", function () {
     console.warn("Password analysis initialization failed: missing elements");
   }
 
-  setupTooltips();
+  setupInfoPopovers();
 });
+function setupInfoPopovers() {
+  const infoBtns = document.querySelectorAll(".info-popover-btn");
+  const popovers = document.querySelectorAll(".info-popover");
+  const closeBtns = document.querySelectorAll(".close-popover-btn");
+  let activePopover = null;
 
-function setupTooltips() {
-  const tooltips = document.querySelectorAll(".tooltip");
-  const infoButtons = document.querySelectorAll(".modal-open");
-  let activeTooltip = null;
-
-  tooltips.forEach((tooltip) => {
-    document.body.appendChild(tooltip);
-  });
-
-  infoButtons.forEach((button) => {
-    const targetId = button.getAttribute("data-target");
-    const tooltip = document.getElementById(targetId);
-
-    if (!tooltip) return;
-
-    const showTooltip = () => {
-      if (activeTooltip && activeTooltip !== tooltip) {
-        activeTooltip.classList.add("hidden");
-      }
-
-      const buttonRect = button.getBoundingClientRect();
-      tooltip.style.top = `${buttonRect.bottom + window.scrollY + 10}px`;
-      tooltip.style.left = `${buttonRect.left + window.scrollX - 10}px`;
-      tooltip.classList.remove("hidden");
-      activeTooltip = tooltip;
-    };
-
-    const hideTooltip = () => {
-      setTimeout(() => {
-        if (!tooltip.matches(":hover")) {
-          tooltip.classList.add("hidden");
-          if (activeTooltip === tooltip) {
-            activeTooltip = null;
-          }
-        }
-      }, 200);
-    };
-
-    button.addEventListener("mouseenter", showTooltip);
-    button.addEventListener("mouseleave", hideTooltip);
-    tooltip.addEventListener("mouseleave", hideTooltip);
-
-    button.addEventListener("click", (e) => {
+  infoBtns.forEach((btn) => {
+    btn.addEventListener("click", function (e) {
       e.stopPropagation();
-      if (tooltip.classList.contains("hidden")) {
-        showTooltip();
-      } else {
-        tooltip.classList.add("hidden");
-        activeTooltip = null;
+      const popoverId = btn.getAttribute("data-popover");
+      const popover = document.getElementById(popoverId);
+      if (popover) {
+        // Hide any open popover
+        if (activePopover && activePopover !== popover) {
+          activePopover.classList.add("hidden");
+        }
+        // Position popover next to button
+        const rect = btn.getBoundingClientRect();
+        popover.style.top = rect.bottom + window.scrollY + "px";
+        popover.style.left = rect.left + window.scrollX + "px";
+        popover.classList.remove("hidden");
+        activePopover = popover;
       }
     });
   });
 
-  document.addEventListener("click", () => {
-    if (activeTooltip) {
-      activeTooltip.classList.add("hidden");
-      activeTooltip = null;
+  closeBtns.forEach((btn) => {
+    btn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      btn.closest(".info-popover").classList.add("hidden");
+      activePopover = null;
+    });
+  });
+
+  document.addEventListener("click", function () {
+    if (activePopover) {
+      activePopover.classList.add("hidden");
+      activePopover = null;
     }
   });
 
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && activeTooltip) {
-      activeTooltip.classList.add("hidden");
-      activeTooltip = null;
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && activePopover) {
+      activePopover.classList.add("hidden");
+      activePopover = null;
     }
   });
 }
