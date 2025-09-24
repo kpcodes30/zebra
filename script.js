@@ -108,6 +108,18 @@ function updatePasswordAnalysis(password) {
 }
 
 function calculatePasswordStrength(password) {
+  if (typeof zxcvbn !== "function") {
+    return {
+      score: 0,
+      strength: "Unavailable",
+      color: "bg-gray-600",
+      crackTimes: { fast: "", slow: "", onlineFast: "", onlineThrottled: "" },
+      length: password.length,
+      entropy: 0,
+      characterTypes: { lowercase: false, uppercase: false, numbers: false, symbols: false, count: 0 },
+      rawGuesses: 0,
+    };
+  }
   const result = zxcvbn(password);
 
   const SCORE_MAP = [
