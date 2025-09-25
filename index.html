@@ -128,15 +128,36 @@
               tabindex="0"
               class="menu menu-sm dropdown-content bg-black border border-gray-800 rounded-box z-1 mt-3 w-52 p-2 shadow-lg"
             >
-              <li>
-                <a class="text-gray-300 hover:text-white hover:bg-gray-800"
-                  >Blogs</a
-                >
+              <li class="relative">
+                <button type="button" disabled aria-disabled="true" class="flex items-center justify-between pr-2 w-full text-gray-300 cursor-not-allowed gap-2 btn btn-ghost btn-sm !bg-transparent hover:!bg-transparent normal-case">
+                  <span>Blogs</span>
+                  <span class="badge badge-sm bg-gray-800 border border-gray-700 text-[10px] tracking-wide uppercase">Coming&nbsp;Soon</span>
+                </button>
               </li>
-              <li>
-                <a class="text-gray-300 hover:text-white hover:bg-gray-800"
-                  >Credits</a
-                >
+              <li tabindex="0">
+                <details>
+                  <summary class="text-gray-300 hover:text-white hover:bg-gray-800 cursor-pointer">Credits</summary>
+                  <ul class="menu bg-black border border-gray-800 rounded-box mt-2 w-56 p-2 shadow-lg text-sm">
+                    <li>
+                      <a href="https://tailwindcss.com/" target="_blank" rel="noopener" class="flex items-center justify-between text-gray-300 hover:text-white group" title="Tailwind CSS">
+                        <span>Tailwind CSS</span>
+                        <span class="inline-block rotate-45 text-white/70 group-hover:text-white">➚</span>
+                      </a>
+                    </li>
+                    <li>
+                      <a href="https://daisyui.com/" target="_blank" rel="noopener" class="flex items-center justify-between text-gray-300 hover:text-white group" title="DaisyUI">
+                        <span>DaisyUI</span>
+                        <span class="inline-block rotate-45 text-white/70 group-hover:text-white">➚</span>
+                      </a>
+                    </li>
+                    <li>
+                      <a href="https://github.com/dropbox/zxcvbn" target="_blank" rel="noopener" class="flex items-center justify-between text-gray-300 hover:text-white group" title="zxcvbn (Dropbox)">
+                        <span>zxcvbn</span>
+                        <span class="inline-block rotate-45 text-white/70 group-hover:text-white">➚</span>
+                      </a>
+                    </li>
+                  </ul>
+                </details>
               </li>
             </ul>
           </div>
