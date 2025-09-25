@@ -17,64 +17,42 @@ document.addEventListener('DOMContentLoaded', () => {
     passwordInput.addEventListener('focus', () => {
       privacyInfo.classList.add("hidden");
       resultsPanels.classList.remove("hidden");
-      if (visibilityToggle && passwordInput.value.length > 0) {
-        visibilityToggle.classList.remove('hidden');
-        visibilityToggle.tabIndex = 0;
-      }
     });
 
     passwordInput.addEventListener('input', () => {
       updatePasswordAnalysis(passwordInput.value);
-      if (visibilityToggle) {
-        if (passwordInput.value.length > 0 && document.activeElement === passwordInput) {
-          visibilityToggle.classList.remove('hidden');
-          visibilityToggle.tabIndex = 0;
-        } else if (passwordInput.value.length === 0) {
-          visibilityToggle.classList.add('hidden');
-          visibilityToggle.tabIndex = -1;
-          passwordInput.type = 'password';
+      if (!passwordInput.value && passwordInput.type === 'text') {
+        passwordInput.type = 'password';
+        if (visibilityToggle) {
           visibilityToggle.setAttribute('aria-pressed','false');
           visibilityToggle.setAttribute('aria-label','Show password');
+          const label = visibilityToggle.querySelector('span');
+          if (label) label.textContent = 'SHOW';
         }
       }
     });
 
     if (visibilityToggle) {
-      visibilityToggle.addEventListener('mousedown', e => e.preventDefault()); // prevent focus loss
+  visibilityToggle.addEventListener('mousedown', e => e.preventDefault());
       visibilityToggle.addEventListener('click', () => {
         const showing = passwordInput.type === 'text';
         passwordInput.type = showing ? 'password' : 'text';
         visibilityToggle.setAttribute('aria-pressed', String(!showing));
         visibilityToggle.setAttribute('aria-label', showing ? 'Show password' : 'Hide password');
-        // swap icon (simple stroke path toggle)
         const icon = visibilityToggle.querySelector('#eye-icon');
+        const label = visibilityToggle.querySelector('span');
         if (icon) {
           if (showing) {
             icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />';
+            if (label) label.textContent = 'SHOW';
           } else {
             icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.477 0-8.268-2.943-9.542-7a10.47 10.47 0 012.223-3.592M6.223 6.223A10.05 10.05 0 0112 5c4.477 0 8.268 2.943 9.542 7a10.45 10.45 0 01-4.132 5.411M15 12a3 3 0 00-3-3m0 0a3 3 0 013 3m-3-3L3 3m9 9l9 9" />';
+            if (label) label.textContent = 'HIDE';
           }
         }
       });
 
-      passwordInput.addEventListener('blur', () => {
-        // hide button if neither input nor button are focused and input not empty focus left
-        setTimeout(() => {
-          if (document.activeElement !== passwordInput && document.activeElement !== visibilityToggle) {
-            visibilityToggle.classList.add('hidden');
-            visibilityToggle.tabIndex = -1;
-          }
-        }, 100);
-      });
-
-      visibilityToggle.addEventListener('blur', () => {
-        setTimeout(() => {
-          if (document.activeElement !== passwordInput && document.activeElement !== visibilityToggle) {
-            visibilityToggle.classList.add('hidden');
-            visibilityToggle.tabIndex = -1;
-          }
-        }, 100);
-      });
+      
     }
 
     if (checkButton) {
@@ -161,6 +139,9 @@ function updatePasswordAnalysis(password) {
   if (entropy) entropy.textContent = `${analysis.entropy.toFixed(2)} bits`;
   if (charTypes) charTypes.textContent = analysis.characterTypes.count;
 }
+
+
+window.updatePasswordAnalysis = updatePasswordAnalysis;
 
 function calculatePasswordStrength(password) {
   if (typeof zxcvbn !== "function") {

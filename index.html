@@ -248,21 +248,24 @@
                 type="password"
                 id="password-input"
                 placeholder="Type your password here..."
-                class="input input-lg w-full pr-32 bg-gray-900 border-gray-700 text-white placeholder-gray-500 focus:border-red-600 focus:outline-none"
+                class="input input-lg w-full bg-gray-900 border-gray-700 text-white placeholder-gray-500 focus:border-red-600 focus:outline-none"
               />
-              <button
-                type="button"
-                id="password-visibility-toggle"
-                class="hidden absolute inset-y-0 right-20 flex items-center px-2 text-gray-500 hover:text-gray-300 focus:outline-none"
-                aria-label="Show password"
-                aria-pressed="false"
-                tabindex="-1"
-              >
-                <svg id="eye-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-              </button>
+              <div class="mt-2 flex items-center justify-between text-[11px] tracking-wide">
+                <button
+                  type="button"
+                  id="password-visibility-toggle"
+                  class="flex items-center gap-1 text-gray-500 hover:text-gray-300 focus:outline-none transition"
+                  aria-label="Show password"
+                  aria-pressed="false"
+                >
+                  <svg id="eye-icon" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                  <span class="uppercase tracking-wider text-[10px]">SHOW</span>
+                </button>
+                <div id="engine-status" class="text-gray-500 select-none">Loading strength engine…</div>
+              </div>
               <button
                 type="button"
                 id="check-button"
@@ -581,7 +584,47 @@
       </div>
     </footer>
 
-  <script src="/zxcvbn.js"></script>
-    <script src="script.js"></script>
+  <script src="./zxcvbn.js"></script>
+  <script>
+    (function ensureZxcvbn(){
+      const statusEl = document.getElementById('engine-status');
+      function markReady(){ if(statusEl) { statusEl.textContent=''; statusEl.classList.add('opacity-0'); } }
+      function markLoading(msg){ if(statusEl){ statusEl.textContent=msg; statusEl.classList.remove('opacity-0'); } }
+
+      if (typeof window.zxcvbn === 'function') { markReady(); return; }
+      markLoading('Loading strength engine…');
+
+      const sources = [
+        { src: 'https://cdnjs.cloudflare.com/ajax/libs/zxcvbn/4.4.2/zxcvbn.js', sri: 'sha512-bxVYj1y24Jpca2kdO+u9dB1PX0V9SwVbaUu7OddhLTltFwLTaWQSrbiHW7TynrNpYJrooS9t7xuwLqZwdS+Kxw==' },
+        { src: 'https://cdn.jsdelivr.net/npm/zxcvbn@4.4.2/dist/zxcvbn.js' },
+        { src: 'https://unpkg.com/zxcvbn@4.4.2/dist/zxcvbn.js' }
+      ];
+      let used = 0;
+      function loadNext(){
+        if (typeof window.zxcvbn === 'function') { markReady(); rerun(); return; }
+        if (used >= sources.length) { markLoading('Strength engine failed to load'); return; }
+        const cfg = sources[used++];
+        const s = document.createElement('script');
+        s.src = cfg.src;
+        if (cfg.sri){ s.integrity = cfg.sri; s.crossOrigin='anonymous'; }
+        s.onload = function(){ markReady(); rerun(); };
+        s.onerror = function(){ markLoading('Retrying…'); setTimeout(loadNext, 200); };
+        document.head.appendChild(s);
+      }
+      function rerun(){
+        const input = document.getElementById('password-input');
+        if (input && input.value) {
+          if (typeof window.updatePasswordAnalysis === 'function') {
+            window.updatePasswordAnalysis(input.value);
+          } else {
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+          }
+        }
+      }
+    
+      loadNext();
+    })();
+  </script>
+  <script src="script.js"></script>
   </body>
 </html>
